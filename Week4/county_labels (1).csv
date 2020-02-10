@@ -1,0 +1,55 @@
+var,varlabels
+countyFIPS,FIPS
+Geo_NAME,Name of Area
+Geo_QNAME,Qualifying Name
+stateFIPS,State
+Geo_COUNTY,County
+daysPhysUH,Physically Unhealthy Days per Month (Persons 18 Years and Over)
+daysMentUH,Mentally Unhealthy Days per Month (Persons 18 Years and Over)
+fairPoorH,Percent of Adults That Report Fair or Poor Health (Persons 18 Years and Over)
+lowBwt,Percent of Low Birthweight Births (<2.5kg)
+pcpRate,"Primary Care Physicians (PCP) Rate per 100,000 Population"
+mhpRate,"Mental Health Providers (MHP) Rate per 100,000 Population"
+dentRate,"Dentists Rate per 100,000 Population"
+uninsUnd19,"Percent of Persons Without Insurance (Population Under 19 Years, 2013 est.)"
+unins1864,"Percent of Persons Without Insurance (Population 18 to 64 Years, 2013 est.)"
+uninsUnd65,"Percent of Persons Without Insurance (Population Under 65 Years, 2013 est.)"
+ypll,"Years of Potential Life Lost (YPLL) Rate per 100,000 Population (Less than 75 Years)"
+infMort,"Infant Mortality Rate per 1,000 Live Births"
+chiMort,"Child Mortality Rate per 1,000 Population"
+premAAMort,"Premature Age-adjusted Mortality Rate per 100,000 Population"
+drugMort,"Drug Poisoning Mortality Rate per 100,000 Population"
+diabAdult,Percent Diabetics (Adults)
+teenBirth,"Teen Births Rate per 100,000 Population (Females 15 to 19 Years)"
+chlamRate,"Chlamydia Cases Rate per 100,000 Population"
+hivPrevRate,"HIV Prevalence Rate per 100,000 Population"
+smokeRate,Percent Current Smokers (Persons 18 Years and Over)
+drinkRate,Percent Drinking Adults (Persons 18 Years and Over)
+limHealthFood,Percent of Persons with Limited Access to Healthy Foods
+accExer,Percent of Persons with Access to Exercise Opportunities
+obesity,Percent Obese Persons (20 Years and Over)
+physInact,Percent Percent Physically Inactive Persons (20 Years and Over)
+freeLunch,Percent of Children Eligible for Free Lunch (Persons < 18 Years)
+fei,Food Environment Index
+GEOID,geographic identifier
+NAME,"county,state"
+area,square miles
+ed_lhs,adults w/o HS diploma (%)
+mhhi,median household income ($)
+white,white pop (%)
+black,black/AA pop (%)
+aian,Am Indian/Alaska nat pop (%)
+asian,Asian pop (%)
+nhpi,nat Hawaii/Pac Isl pop (%)
+othRace,other race pop (%)
+multRace,mult race pop (%)
+hisp,Hispanic pop (%)
+nonhisp,non-Hispanic pop (%)
+ed_hssc,adults w/ HS or some coll. (%)
+ed_bach,adults with 4-yr deg (%)
+ed_grad,adults w/ grad deg (%)
+ed_4yr,adults with AT LEAST a 4-yr deg
+unemp,unemployment rate (%)
+incCat,median HH income (4-categories)
+Region,US Region
+state,State name

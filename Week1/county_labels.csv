@@ -1,0 +1,52 @@
+var,varlabels
+countyFIPS,FIPS
+Geo_NAME,Name of Area
+Geo_QNAME,Qualifying Name
+stateFIPS,State
+Geo_COUNTY,County
+daysPhysUH,Physically Unhealthy Days per Month (Persons 18 Years and Over)
+daysMentUH,Mentally Unhealthy Days per Month (Persons 18 Years and Over)
+fairPoorH,Percent of Adults That Report Fair or Poor Health (Persons 18 Years and Over)
+lowBwt,Percent of Low Birthweight Births (<2.5kg)
+pcpRate,"Primary Care Physicians (PCP) Rate per 100,000 Population"
+mhpRate,"Mental Health Providers (MHP) Rate per 100,000 Population"
+dentRate,"Dentists Rate per 100,000 Population"
+uninsUnd19,"Percent of Persons Without Insurance (Population Under 19 Years, 2013 est.)"
+unins1864,"Percent of Persons Without Insurance (Population 18 to 64 Years, 2013 est.)"
+uninsUnd65,"Percent of Persons Without Insurance (Population Under 65 Years, 2013 est.)"
+ypll,"Years of Potential Life Lost (YPLL) Rate per 100,000 Population (Less than 75 Years)"
+infMort,"Infant Mortality Rate per 1,000 Live Births"
+chiMort,"Child Mortality Rate per 1,000 Population"
+premAAMort,"Premature Age-adjusted Mortality Rate per 100,000 Population"
+drugMort,"Drug Poisoning Mortality Rate per 100,000 Population"
+diabAdult,Percent Diabetics (Adults)
+teenBirth,"Teen Births Rate per 100,000 Population (Females 15 to 19 Years)"
+chlamRate,"Chlamydia Cases Rate per 100,000 Population"
+hivPrevRate,"HIV Prevalence Rate per 100,000 Population"
+smokeRate,Percent Current Smokers (Persons 18 Years and Over)
+drinkRate,Percent Drinking Adults (Persons 18 Years and Over)
+limHealthFood,Percent of Persons with Limited Access to Healthy Foods
+accExer,Percent of Persons with Access to Exercise Opportunities
+obesity,Percent Obese Persons (20 Years and Over)
+physInact,Percent Percent Physically Inactive Persons (20 Years and Over)
+freeLunch,Percent of Children Eligible for Free Lunch (Persons < 18 Years)
+fei,Food Environment Index
+stateFIPS,State (FIPS)
+pop25,Population 25 Years and Over:
+ed_lhs,Population 25 Years and Over: Less than High School
+pop25_hs,Population 25 Years and Over: High School Graduate or More (Includes Equivalency
+pop25_col,Population 25 Years and Over: Some College or More
+pop25_bach,Population 25 Years and Over: Bachelor's Degree or More
+pop25_master,Population 25 Years and Over: Master's Degree or More
+pop25_pro,Population 25 Years and Over: Professional School Degree or More
+pop25_doc,Population 25 Years and Over: Doctorate Degree
+pop16,Civilian Population in Labor Force 16 Years and Over:
+pop16_emp,Civilian Population in Labor Force 16 Years and Over: Employed
+pop16_unemp,Civilian Population in Labor Force 16 Years and Over: Unemployed
+income,Median Household Income (In 2015 Inflation Adjusted Dollars)
+ed_hssc,Population 25 Years and Over: High School Graduate or More (Includes Equivalency
+ed_bach,Population 25 Years and Over: Bachelor's Degree or More
+ed_grad,Population 25 Years and Over: Master's Degree or More
+ed_4yr,Population 25 Years and Over: High School Graduate or More (Includes Equivalency
+unemp,Civilian Population in Labor Force 16 Years and Over: Unemployed
+incCat,Income quartile

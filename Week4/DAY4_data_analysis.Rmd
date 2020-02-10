@@ -1,0 +1,528 @@
+---
+title: "DAY4 DATA ANALYSIS"
+author: "Xiaoyan Wang"
+date: "2/1/2019"
+output: html_document
+---
+
+```{r prolog}
+
+'# PROLOG   ################################################################'
+
+'# PROJECT: DAY 4 R-SKILLLAB_SP18 DATA ANALYSIS IN R #'
+'# PURPOSE: T-TESTS; ANOVA; CHI-SQ TABLES, LINEAR/LOGISTIC REGRESSION #'
+'# DIR:     /Users/candice_wang/Box/Courses/2019 Spring/RSkillLab/Session 4/ #'
+'# DATA:    counties.csv #'
+'#          county_labels.csv #'
+'# AUTHOR:  XIAOYAN WANG; TODD COMBS  #'
+'# CREATED: OCT 19, 2017 #'
+'# LATEST:  JAN 31, 2019 #'
+'# NOTES:    #'
+
+'# PROLOG   ###############################################################'
+```
+
+```{r lib}
+# LIBRARIES ---------------------------------------------------------------
+
+#for first loading of a package, you must install via install.packages()
+#install.packages
+p <- c("vcd","car", "sandwich", "lmtest", "tableone", "stargazer", "Hmisc","corrplot", "PerformanceAnalytics")
+install.packages(p)
+
+#then load packages
+library(tidyverse) # for various packages
+library(haven) # for reading Stata file
+library(labelled) # for getting variable labels
+library(magrittr) # for extra %$% pipe
+library(vcd) # for assocstats function for chi-sq, Cramers V, etc.
+library(car) # for regression diagnostics
+library(sandwich) # for heteroskedasticy-robust SEs
+library(lmtest) # for coeftest (SEs for heteroskedasticity)
+library(tableone) #get Table 1 done
+library(stargazer) #show model results
+library(Hmisc) #get correlation results
+library(PerformanceAnalytics) #plot the correlation results
+```
+
+
+
+```{r data}
+setwd("C:/Users/artol/Documents/Sp19/R Skills Lab/Week4")
+
+# READ IN DATA ------------------------------------------------------------
+
+county <- read_csv("counties (1).csv")
+chlabels <- read_csv("county_labels (1).csv")
+
+# DATA ANALYSIS -------------------------------------
+
+names(county)
+
+#inspect
+View(chlabels)
+
+# Descriptives ------------------------------------------------------------
+
+table1 <- county %>%
+  select(daysPhysUH:freeLunch, incCat, Region) #selecting PhysUH THROUGH free lunch. Also selecting incCat and Region
+
+summary <- CreateTableOne(data=table1)
+print(summary) #will automatically give you mean and SC for continuous and percentages for categorical 
+
+#if we have non-normal variables
+nonnormalvar <- c("daysPhysUH","daysMentUH","fairPoorH")
+print(summary, nonnormal=nonnormalvar) #"nonnormal" function tells R data are not normal and then gives you median and IQR instead
+
+#if we want to stratify by certain variable
+myvars <- names(table1)
+table1_stra <- CreateTableOne(vars = myvars, strata = "Region" , data = table1) #"strata" divides it by catergory (Region); using the table1 data set
+
+table1_stra
+
+#Save in csv file
+table1_stra <- print(table1_stra, quote = TRUE, noSpaces = TRUE, printToggle = FALSE)
+write.csv(table1_stra, file = "myTable.csv")
+```
+
+```{r chi-square}
+# CHI-SQUARE TESTS --------------------------------------------------------
+
+#need two categorical variables
+#create a binary education variable for "highly educated" counties
+
+county %$% summary(ed_4yr) 
+ed <- county %>%
+  select(Region, ed_4yr) %>%
+  mutate(highed = ifelse(ed_4yr>=25,1,0)) %>% #if the education is above 4yrs is great thean 25%, we are going to assign them 1, otherwise, it is 0. (can use multiple ifelse function if you want)
+  mutate(highed = factor(highed, levels=0:1, #now, we are making it a factor/character variable, rather than numerical
+                         labels=c("Below 25%", "At least 25%"))) #0 is below 25% and 1 is above 25%
+#look at results
+View(ed)
+
+#prop.tables for education by region
+x1 <- ed %$% table(Region, highed)
+x1 #will give you the table results for the variables you typed in the paranthesis 
+
+#keep only two vars
+ed <- ed %>%
+  select(-ed_4yr) #get rid of the "ed_4yr" variable 
+
+# The '.' tells R to 
+# apply the function in which it is wrapped to every 
+# column of the object on the left side of the pipe.
+x <- ed %$% table(.) #. means EVERYTHING in that dataset
+x
+
+# get overall percentage (proportion) in each cell
+px <- prop.table(x) #will show you the cell percentages of previous table
+# get percentages by row
+pxrow <- prop.table(x, 1) #1 means "row"
+pxrow
+# get percentages by column
+pxcol <- prop.table(x, 2) #2 means "column"
+pxcol
+
+#chi-sq test
+chisq.test(x) #x was the table you created in a previous step
+
+#OR we can use
+ed  %$% chisq.test(table(Region, highed))
+ed  %$% chisq.test(Region, highed)
+chisq.test(ed$Region, ed$highed) #this means "the region variable in the ed data set, etc. Pipeline is a shortcut"
+
+#Cramer's V for strength of association (and others)
+assocstats(x)
+
+#create barplot of percentages by region
+df <- as_tibble(pxcol)
+view(df)
+
+#set theme
+theme_set(theme_minimal())
+g <- df %>%
+  ggplot(aes(x=Region, y=n*100, fill=highed))
+
+g <- g + geom_col() #geom bar gives you aggregated data and geom column gives ones column
+
+g
+
+g <-  g + labs(y = "Percentage of counties", x="", 
+               fill = "Adults with college degree")
+
+g
+
+#put legend on top
+g <- g + theme(legend.position = "top")
+g
+
+#put legend title on top of legend
+g <- g + guides( fill = 
+                   guide_legend(title.position="top", title.hjust = 0.5))
+g
+
+
+# order bars from largest to smallest % adults with degree
+
+dft <- df %>% filter(highed=="At least 25%") %>% 
+  arrange(desc(n)) #arrange observations decendings, according to the value of "at least 25%"
+view(dft)
+
+g <- df %>%
+  ggplot(aes(x=factor(Region, levels=dft %$% Region), y=n*100, fill=highed))
+view(g)#we want values of region within the dft data set
+
+#OR
+
+g <- df %>%
+  ggplot(aes(x=factor(Region, levels=c("South", "Midwest", "West", "Northwest")), y=n*100, fill=highed))
+view(g)
+
+#Now, make graph
+g <- g + geom_col()
+
+g <-  g + labs(y = "Percentage of counties", x="", 
+               fill = "Adults with college degree", caption ="Chi-squared: 178.67; p < 0.000") +
+  theme(legend.position = "top")
+
+g
+```
+
+```{r t-test}
+# T-TESTS --------------------------------------------------------------
+
+#independent 2-group t-test: one continous var and one categorical var
+#look at education (% with degree) and mental health risk
+
+ment <- county %>%
+  select(daysMentUH, ed_4yr) %>%
+  mutate(mh = ifelse(daysMentUH>=4, 1, 0)) %>% # create low and high categories
+  mutate(mh = factor(mh, 0:1, c("Low-risk", "High-risk"))) %>%
+  select(-daysMentUH)
+view(ment)
+
+mht <- t.test(ed_4yr~mh, data=ment) #~ means "by" so ed_4yr by mh in the "ment" data set
+mht
+
+#look at boxplots
+g <- ment %>%
+  ggplot(aes(y=ed_4yr, x=mh))
+
+g <- g + geom_boxplot()
+g
+
+#get rid of NAs
+summary(ment)
+g <- ment %>% filter(!is.na(mh), !is.na(ed_4yr)) %>%
+  ggplot(aes(y=ed_4yr, x=mh))
+g <- g + geom_boxplot()
+g
+
+#look at phys v. ment health in paired t-test
+#used here as an example; 
+#paired t-test are most often used for pre v. post tests
+
+mp <- county %>%
+  select(daysMentUH, daysPhysUH) %>%
+  na.omit() %>% #drop any cases with missing values in either of the cases
+  rename(mh = daysMentUH, ph = daysPhysUH)
+view(mp)
+
+# paired t-test
+mpt <- mp %$%
+  t.test(mh, ph, paired = T) #T = TRUE
+
+mpt
+
+# independent 2-group t-test: both variables are continous 
+mp %$%
+  t.test(mh, ph) #put the two continuous variables in the parenthesis
+                # use ~ for continues and , for continuous 
+
+#one-sample t test
+county %$%
+  t.test(daysMentUH, mu=0) #mu = mean
+
+```
+
+```{r}
+# ANOVA ------------------------------------------------------------
+
+#look at low birth weight rates by region
+
+lb <- county %>%
+  select(lowBwt, Region) %>%
+  na.omit()
+
+lba <- lb %$% #anova
+  aov(lowBwt~Region) #aov=anova
+lba
+summary(lba)
+
+#post-hoc
+tlb <- TukeyHSD(lba)
+tlb
+
+#look at structure of tukey
+str(tlb)
+str(tlb$Region) #will only give you the elements in the region
+
+tk <- as_tibble(tlb$Region) %>%
+  mutate(comps = dimnames(tlb$Region)[[1]]) %>%
+  arrange(diff)
+view(tk)
+
+#plot
+g <- tk %>%
+  ggplot(aes(x=diff, xmin=lwr, xmax=upr, y=comps))
+
+g <- g + geom_errorbarh() + geom_point()
+g
+
+#reorder the error bar
+g <- tk %>%
+  ggplot(aes(x=diff, xmin=lwr, xmax=upr, y=reorder(comps, diff)))
+
+g <- g + geom_errorbarh(height=0.2) + geom_point()
+g
+
+#Add intercepts
+g <- g + geom_vline(aes(xintercept=0), linetype=2, color="red")
+g
+
+#Change the lables
+g <- g + labs(y="", x="Difference in means with 95% CIs")
+g
+
+```
+
+```{r nonparamatric}
+
+# independent 2-group Mann-Whitney U Test 
+ment%$%
+wilcox.test(ed_4yr~mh) # where the first var is numeric and  the second is binary factor
+
+# independent 2-group Mann-Whitney U Test
+mp %$%
+wilcox.test(mh, ph) # where both vars are numeric
+
+# dependent 2-group Wilcoxon Signed Rank Test 
+mp %$%
+wilcox.test(mh, ph, paired = T) # where both vars are numeric
+
+# Kruskal Wallis Test One Way Anova by Ranks 
+county %$%
+kruskal.test(lowBwt~factor(Region)) # where the first is numeric and the second is a factor
+```
+
+
+```{r correlation}
+# OLS REGRESSION/CORRELATIONS ----------------------------------------------------------------
+
+#look at influences/correlations of premature death rates
+
+#income
+county %$%
+  cor(mhhi, premAAMort) #cor means correlation between mhhi and premAAMort; we get NA b/c we have missing vars
+
+county %$% # remove NAs
+  cor(mhhi, premAAMort, use="complete.obs") #"use=complete.obs" will ONLY keep complete observations and will remove all missing. However, this function can only be used for correlations. 
+
+#obesity rates
+
+c2 <- county %>%
+  select(mhhi, obesity, premAAMort) 
+
+c2 %$%
+  cor(., use="complete.obs") #. will apply to all the variables from above
+
+#OR...
+
+cor(c2, use="complete.obs")
+
+#corTest for p-value on two vars
+c2 %$%
+cor.test(mhhi, obesity, use="complete.obs") #will test the sig. of the correlations 
+
+#look at correlations of independent variables & DV
+
+c2 <- county %>%
+  select(premAAMort, mhhi, obesity, white, smokeRate, pcpRate)
+
+cor(c2, use="complete.obs")
+
+cor <- rcorr(as.matrix(c2), type="pearson") # type can be pearson or spearman; spearman for non-normal
+
+#Graph the correlation matrix
+chart.Correlation(c2, histogram=TRUE, pch=19)
+```
+
+
+```{r OLS, results='asis'}
+#linear model
+
+#first let's rescale income to be in 1000s
+county <- county %>%
+  mutate(inc1000 = mhhi/1000)
+
+# lm = linear model  OLS
+m1 <- lm(premAAMort~inc1000+obesity+white+smokeRate+pcpRate+Region,
+         data=county) #(dependent ~ independent variables, data = dataset name) 
+
+summary(m1) # gives coefficients and model stats
+
+# plotting linear model gives diagnostics
+plot(m1) #the dots with numbers might be outliers
+
+#check some assumptions
+
+#vif: fir multicollinearity
+vif(m1)
+
+#homoskedasticity:Non-constant Error Variance
+ncvTest(m1)
+bptest(m1)
+
+## Evaluate Nonlinearity
+# component + residual plot 
+crPlots(m1)
+
+# Non-independence of Errors
+# Test for Autocorrelated Errors
+durbinWatsonTest(m1)
+
+#residual normality
+hist(resid(m1))
+qqPlot(resid(m1))
+
+#influential obs
+influencePlot(m1,	id.method="identify", 
+              main="Influence Plot", 
+              sub="Circle size is proportional to Cook's Distance" ) #each circle represents a case
+
+# identify inflential obs in plot (calculate cut off of cook's distance)
+cutoff <- 4/((nrow(county)-length(m1$coefficients)-2)) 
+plot(m1, which=4, cook.levels=cutoff) #the big lines with numbers are the influential cases
+
+#drop influential obs and compare results
+c2 <- county %>%
+  filter(!row_number(state) %in% c(920,1257,2214)) #we don't have the rows in 920, 1257, or 2214, so drop them (found those rows in the Cook's distance that we inspected)
+
+m2 <- lm(premAAMort~inc1000+obesity+white+smokeRate+pcpRate+Region,
+         data=c2)
+summary(m2)
+
+m1$coefficients #coefficients within m1 vs. coefficients within m2
+m2$coefficients
+
+#or we can use 
+stargazer(m1, m2,title="Regression Results",type="text",
+          align=TRUE, 
+          covariate.labels=c("Median household income", "Obesity rate", 
+                             "% White","Smoking rate",
+                             "Primary Care Physicians (PCP) Rate per 100,000"),
+          omit.stat=c("LL","ser","f"), no.space=TRUE) #change lables in your summary table with "covariate.labels"
+
+#not that much difference so we'll keep
+
+# get SEs robust for heteroskedasticity
+coeftest(m1, vcov=vcovHC(m1))
+summary(m1) #m1 is the model name in this example
+
+#create tibble of robust results; plot the results 
+m3 <- coeftest(m1, vcov=vcovHC(m1))
+
+str(m3)
+
+m3 <- tibble(coef=row.names(m3), est=m3[,1], se=m3[,2]) #taking est only from 1st column and SE only from 2nd column
+view(m3)
+
+#create confidence intervals
+m3 <- m3 %>%
+  mutate(lb = est - 1.96*se,
+         ub = est + 1.96*se)
+
+m3
+
+#drop intercept and sort
+m4 <- m3 %>%
+  filter(coef != "(Intercept)") %>% #get rid of the intercept row
+  arrange(est)
+
+m4
+view(m4)
+
+# OR use slice
+
+m4 <- m3 %>%
+  slice(-1) %>% #slice means to select the rows. it is similar to the filter function; slice(-1) means "drop the first row"
+  arrange(est)
+
+
+#create labels for coefficients
+m4 <- m4 %>%
+  mutate(name = c( "Median Income ($1,000s)",
+                  "% White", "Primary Care Physicians",
+                   "Obesity", "Smoking", "Region: Northeast",
+                  "Region: West",  "Region: South"))
+m4
+
+g <- m4 %>%
+  ggplot(aes(x=est, xmin=lb, xmax=ub, y=reorder(name, -est)))
+
+g <- g + geom_errorbarh(aes(height=0.25))
+g <- g + geom_point() + geom_vline(aes(xintercept=0), color="red", linetype=2)
+g
+
+# add Adj R-sq & N
+str(summary(m1))
+
+ar <- summary(m1)$r.squared 
+ar #extracting R-squared from m1
+
+#round the R2 3 decimals 
+ar <- round(summary(m1)$r.squared,3)
+ar
+
+myn <- length(resid(m1))
+myn
+
+arn <- paste0("R-sq. = ",ar)
+arn
+
+myn2 <- paste0("N = ", myn)
+myn2
+
+#Present the results 
+g <- g + labs(y="", x="Estimates with 95% confidence intervals", 
+              subtitle=paste(arn, myn2), 
+              title="Outcome: Premature Age-adjusted Mortality Rates (per 100,000 pop.)")
+g
+```
+
+```{r GLM}
+#Logistic Regression
+county$test <- sample(c(1,0),nrow(county), replace=T) #create new variable in county dataset called "test"
+
+m2logit <- glm(test~inc1000+obesity+white+smokeRate+pcpRate+Region,
+               data=county, family="binomial")
+summary(m2logit)
+coef(m2logit)
+
+## odds ratios only
+exp(coef(m2logit))
+
+## odds ratios and 95% CI
+exp(cbind(OR = coef(m2logit), confint(m2logit))) #confint means confience interval; OR is Odds Ratio
+
+
+m3logit <- glm(test~inc1000+smokeRate+pcpRate+Region,
+               data=county, family="binomial")
+
+stargazer(m2logit,m3logit,title="Logistic Regression Results",type="text",
+          align=TRUE, no.space=TRUE)
+
+stargazer(m2logit,m3logit,title="Logistic Regression Results",type="text",
+          align=TRUE, no.space=TRUE, ci=TRUE)
+```
+
